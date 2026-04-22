@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LA HORMA HUMANA - Vendedora</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Horma">
+    <meta name="theme-color" content="#2c3e6d">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #e9ecef; padding: 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+        .logo-container { margin-bottom: 10px; }
+        .logo { max-width: 120px; max-height: 80px; object-fit: contain; }
+        .title { font-size: 28px; color: #2c3e6d; letter-spacing: 3px; }
+        .subtitle { font-size: 12px; color: #666; margin-top: 5px; }
+        
+        .datos-cliente {
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #2c3e6d20;
+        }
+        .datos-cliente label {
+            font-weight: bold;
+            color: #2c3e6d;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .datos-cliente input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .datos-cliente input:last-child { margin-bottom: 0; }
+        
+        .button-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
+        .btn-primary { background: #2c3e6d; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary.active, .btn-secondary.active { border: 3px solid #ffc107; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-warning { background: #d97706; color: white; }
+        
+        .fields-list { margin: 20px 0; max-height: 500px; overflow-y: auto; }
+        .field-item { background: #f8f9fa; margin-bottom: 10px; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; }
+        .field-item label { font-weight: bold; color: #2c3e6d; font-size: 14px; flex: 1; cursor: pointer; }
+        .field-item input { width: 120px; padding: 8px; border: 1px solid #ccc; border-radius: 8px; text-align: right; font-size: 16px; font-family: monospace; }
+        
+        .help-panel { position: fixed; top: 10px; left: 10px; right: 10px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); padding: 10px; text-align: center; z-index: 1000; display: none; border: 2px solid #2c3e6d; max-width: 280px; margin: 0 auto; }
+        .help-panel.active { display: block; }
+        .help-image { max-width: 100%; height: auto; max-height: 100px; margin-bottom: 6px; background: #f0f0f0; border-radius: 8px; }
+        .help-text { font-size: 11px; color: #333; line-height: 1.3; }
+        .btn-cerrar-ayuda { background: #dc3545; color: white; border: none; border-radius: 20px; padding: 4px 12px; font-size: 11px; margin-top: 6px; cursor: pointer; }
+        
+        .action-buttons { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .action-buttons .btn { flex: 1; min-width: 120px; }
+        .status { background: #e8f5e9; padding: 10px; border-radius: 25px; text-align: center; font-size: 12px; color: #2b5e2b; margin-top: 10px; }
+        .grupo-titulo { background: #2c3e6d; color: white; padding: 8px; border-radius: 10px; margin: 15px 0 10px 0; text-align: center; font-size: 14px; }
+        
+        @media (max-width: 600px) {
+            .field-item { flex-direction: row; flex-wrap: wrap; }
+            .field-item label { flex: 1; min-width: 120px; }
+            .field-item input { width: 100px; }
+            .help-panel { top: 5px; left: 5px; right: 5px; max-width: 260px; }
+            .action-buttons .btn { min-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img id="logoImg" class="logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            </div>
+            <h1 class="title">LA HORMA HUMANA</h1>
+            <p class="subtitle">Sistema de Automatización de Medidas</p>
+        </div>
+
+        <div class="datos-cliente">
+            <label>👤 NOMBRE DEL CLIENTE:</label>
+            <input type="text" id="nombreCliente" placeholder="Ej: Maria Gomez" autocomplete="off">
+            <label>👕 NOMBRE DE LA PRENDA:</label>
+            <input type="text" id="nombrePrenda" placeholder="Ej: Blusa, Pantalon, Falda, Camisa" autocomplete="off">
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="btnSuperiores">👕 SUPERIORES</button>
+            <button class="btn btn-secondary" id="btnInferiores">👖 INFERIORES</button>
+        </div>
+
+        <!-- SUPERIORES -->
+        <div id="superioresPanel">
+            <div class="grupo-titulo">📏 MEDIDAS COMUNES</div>
+            <div class="field-item" data-nombre="Contorno de cintura" data-ayuda="Mide la parte más estrecha del torso. Cinta métrica horizontal, sin comprimir.">
+                <label>Contorno de cintura</label>
+                <input type="number" id="I_CONTCINTURA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de cadera baja" data-ayuda="Sobre la parte más prominente de los glúteos. Cinta métrica horizontal.">
+                <label>Contorno de cadera baja</label>
+                <input type="number" id="I_CONTCADBA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Largo de prenda" data-ayuda="Desde la base del cuello (hombro) hasta el largo deseado.">
+                <label>Largo de prenda</label>
+                <input type="number" id="G_LARGOPRENDA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Altura de cadera" data-ayuda="Distancia vertical desde la cintura hasta la cadera.">
+                <label>Altura de cadera</label>
+                <input type="number" id="I_ALTCADERA" step="0.1" value="0">
+            </div>
+            
+            <div class="grupo-titulo">👕 MEDIDAS SUPERIORES</div>
+            <div class="field-item" data-nombre="Caída de hombros" data-ayuda="Diferencia entre la altura del hombro y el cuello. Medida postural.">
+                <label>Caída de hombros</label>
+                <input type="number" id="G_POSTURA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Altura de busto" data-ayuda="Desde el hombro (punto alto) hasta la punta del busto.">
+                <label>Altura de busto</label>
+                <input type="number" id="S_ALTBUSTO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Ancho de espalda" data-ayuda="Distancia horizontal entre ambos brazos, a la altura de la parte media de la espalda.">
+                <label>Ancho de espalda</label>
+                <input type="number" id="S_ANCHOESP" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de bíceps" data-ayuda="Mide el contorno del brazo a la altura del bíceps, brazo relajado.">
+                <label>Contorno de bíceps</label>
+                <input type="number" id="S_CONTBICEP" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de busto" data-ayuda="Mide el contorno a la altura del pecho, pasando por omóplatos y parte más prominente.">
+                <label>Contorno de busto</label>
+                <input type="number" id="S_CONTBUSTO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de cuello" data-ayuda="Mide el contorno de la base del cuello, justo por encima de la clavícula.">
+                <label>Contorno de cuello</label>
+                <input type="number" id="S_CONTCUELLO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de puño" data-ayuda="Mide el contorno de la muñeca a la altura del hueso.">
+                <label>Contorno de puño</label>
+                <input type="number" id="S_CONTPUNO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de sisa" data-ayuda="Mide el contorno de la axila, pasando por el hombro y la parte alta del brazo.">
+                <label>Contorno de sisa</label>
+                <input type="number" id="S_CONTSISA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Largo de manga" data-ayuda="Desde el hombro hasta la muñeca, brazo ligeramente flexionado.">
+                <label>Largo de manga</label>
+                <input type="number" id="S_LARGOMANGA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Profundidad de escote" data-ayuda="Desde la base del cuello hasta el punto donde se desea que caiga el escote.">
+                <label>Profundidad de escote</label>
+                <input type="number" id="S_PROFUN_ESCOTE" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Separación de busto" data-ayuda="Distancia horizontal entre los puntos más prominentes del busto.">
+                <label>Separación de busto</label>
+                <input type="number" id="S_SEPBUSTO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Talle delantero" data-ayuda="Desde el hombro (punto alto) hasta la cintura, pasando por el busto.">
+                <label>Talle delantero</label>
+                <input type="number" id="S_TALLEDEL" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Talle trasero" data-ayuda="Desde la vértebra C7 (prominencia del cuello) hasta la cintura.">
+                <label>Talle trasero</label>
+                <input type="number" id="S_TALLETRA" step="0.1" value="0">
+            </div>
+        </div>
+
+        <!-- INFERIORES -->
+        <div id="inferioresPanel" style="display:none;">
+            <div class="grupo-titulo">📏 MEDIDAS COMUNES</div>
+            <div class="field-item" data-nombre="Contorno de cintura" data-ayuda="Mide la parte más estrecha del torso. Cinta métrica horizontal, sin comprimir.">
+                <label>Contorno de cintura</label>
+                <input type="number" id="I_CONTCINTURA_inf" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de cadera baja" data-ayuda="Sobre la parte más prominente de los glúteos. Cinta métrica horizontal.">
+                <label>Contorno de cadera baja</label>
+                <input type="number" id="I_CONTCADBA_inf" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Largo de prenda" data-ayuda="Desde la base del cuello (hombro) hasta el largo deseado.">
+                <label>Largo de prenda</label>
+                <input type="number" id="G_LARGOPRENDA_inf" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Altura de cadera" data-ayuda="Distancia vertical desde la cintura hasta la cadera.">
+                <label>Altura de cadera</label>
+                <input type="number" id="I_ALTCADERA_inf" step="0.1" value="0">
+            </div>
+            
+            <div class="grupo-titulo">👖 MEDIDAS INFERIORES</div>
+            <div class="field-item" data-nombre="Altura de rodilla" data-ayuda="Distancia desde la cintura hasta la rodilla.">
+                <label>Altura de rodilla</label>
+                <input type="number" id="I_ALTRODILLA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de rodilla" data-ayuda="Mide el contorno de la rodilla a la altura de la rótula.">
+                <label>Contorno de rodilla</label>
+                <input type="number" id="I_CONTRODILLA" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Contorno de tobillo" data-ayuda="Mide el contorno del tobillo a la altura del hueso.">
+                <label>Contorno de tobillo</label>
+                <input type="number" id="I_CONTTOBILLO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Largo de pantalón" data-ayuda="Desde la cintura hasta el largo deseado del pantalón.">
+                <label>Largo de pantalón</label>
+                <input type="number" id="I_LARGOPANTAL" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Altura de tiro" data-ayuda="Desde la cintura delantera hasta la cintura trasera, pasando por la entrepierna.">
+                <label>Altura de tiro</label>
+                <input type="number" id="I_LARGOTIRO" step="0.1" value="0">
+            </div>
+            <div class="field-item" data-nombre="Ancho de pretina" data-ayuda="Ancho deseado para la pretina o cinturilla.">
+                <label>Ancho de pretina</label>
+                <input type="number" id="M_ANCHO_PRETINA" step="0.1" value="0">
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-whatsapp" id="btnEnviarWhatsApp">📤 ENVIAR POR WHATSAPP</button>
+            <button class="btn btn-warning" id="btnRestaurar">🔄 RESTAURAR A CERO</button>
+        </div>
+
+        <div class="status" id="status">✅ Listo | Todos los valores en 0</div>
+    </div>
+
+    <div id="helpPanel" class="help-panel">
+        <img id="helpImage" class="help-image" src="" alt="Guía de medida">
+        <p id="helpText" class="help-text">Toca cualquier campo para ver la guía</p>
+        <button id="btnCerrarAyuda" class="btn-cerrar-ayuda">✕ Cerrar</button>
+    </div>
+
+    <script>
+        // ============================================================
+        // NÚMERO DEL TALLER (WhatsApp) - Déjalo vacío para pruebas
+        // ============================================================
+        const TELEFONO_TALLER = "";  // Vacío para que pida contacto, o pon el número
+        
+        // ============================================================
+        // MEDIDAS COMUNES (siempre visibles)
+        // ============================================================
+        const MEDIDAS_COMUNES = {
+            "I_CONTCINTURA": "Contorno de cintura",
+            "I_CONTCADBA": "Contorno de cadera baja",
+            "G_LARGOPRENDA": "Largo de prenda",
+            "I_ALTCADERA": "Altura de cadera"
+        };
+        
+        // Medidas específicas de SUPERIORES
+        const MEDIDAS_SUPERIORES = {
+            "G_POSTURA": "Caída de hombros",
+            "S_ALTBUSTO": "Altura de busto",
+            "S_ANCHOESP": "Ancho de espalda",
+            "S_CONTBICEP": "Contorno de bíceps",
+            "S_CONTBUSTO": "Contorno de busto",
+            "S_CONTCUELLO": "Contorno de cuello",
+            "S_CONTPUNO": "Contorno de puño",
+            "S_CONTSISA": "Contorno de sisa",
+            "S_LARGOMANGA": "Largo de manga",
+            "S_PROFUN_ESCOTE": "Profundidad de escote",
+            "S_SEPBUSTO": "Separación de busto",
+            "S_TALLEDEL": "Talle delantero",
+            "S_TALLETRA": "Talle trasero"
+        };
+        
+        // Medidas específicas de INFERIORES
+        const MEDIDAS_INFERIORES = {
+            "I_ALTRODILLA": "Altura de rodilla",
+            "I_CONTRODILLA": "Contorno de rodilla",
+            "I_CONTTOBILLO": "Contorno de tobillo",
+            "I_LARGOPANTAL": "Largo de pantalón",
+            "I_LARGOTIRO": "Altura de tiro",
+            "M_ANCHO_PRETINA": "Ancho de pretina"
+        };
+        
+        let tipoActual = "superiores";
+        
+        function obtenerValoresFormulario() {
+            let valores = {};
+            if (tipoActual === "superiores") {
+                for (let codigo in MEDIDAS_COMUNES) {
+                    let input = document.getElementById(codigo);
+                    if (input) valores[codigo] = parseFloat(input.value) || 0;
+                }
+                for (let codigo in MEDIDAS_SUPERIORES) {
+                    let input = document.getElementById(codigo);
+                    if (input) valores[codigo] = parseFloat(input.value) || 0;
+                }
+            } else {
+                for (let codigo in MEDIDAS_COMUNES) {
+                    let input = document.getElementById(codigo + "_inf");
+                    if (input) valores[codigo] = parseFloat(input.value) || 0;
+                }
+                for (let codigo in MEDIDAS_INFERIORES) {
+                    let input = document.getElementById(codigo);
+                    if (input) valores[codigo] = parseFloat(input.value) || 0;
+                }
+            }
+            return valores;
+        }
+        
+        function generarArchivoTXT() {
+            let nombreCliente = document.getElementById('nombreCliente').value.trim();
+            let nombrePrenda = document.getElementById('nombrePrenda').value.trim();
+            let fecha = new Date();
+            let fechaStr = fecha.toLocaleString('es-ES');
+            let valores = obtenerValoresFormulario();
+            
+            let contenido = "========================================\n";
+            contenido += "        LA HORMA HUMANA\n";
+            contenido += "========================================\n\n";
+            contenido += `CLIENTE: ${nombreCliente}\n`;
+            contenido += `PRENDA: ${nombrePrenda}\n`;
+            contenido += `FECHA: ${fechaStr}\n`;
+            contenido += `TIPO: ${tipoActual === "superiores" ? "SUPERIOR" : "INFERIOR"}\n\n`;
+            contenido += "---------- MEDIDAS TOMADAS ----------\n\n";
+            
+            // Medidas comunes
+            for (let [codigo, nombre] of Object.entries(MEDIDAS_COMUNES)) {
+                let valor = valores[codigo];
+                contenido += `${codigo}: ${valor}\n`;
+            }
+            
+            contenido += "\n";
+            
+            // Medidas específicas
+            let medidasEspecificas = tipoActual === "superiores" ? MEDIDAS_SUPERIORES : MEDIDAS_INFERIORES;
+            for (let [codigo, nombre] of Object.entries(medidasEspecificas)) {
+                let valor = valores[codigo];
+                contenido += `${codigo}: ${valor}\n`;
+            }
+            
+            contenido += "\n========================================\n";
+            contenido += "Archivo generado por LA HORMA HUMANA\n";
+            contenido += "========================================";
+            
+            return contenido;
+        }
+        
+        function enviarPorWhatsApp() {
+            let nombreCliente = document.getElementById('nombreCliente').value.trim();
+            let nombrePrenda = document.getElementById('nombrePrenda').value.trim();
+            
+            if (!nombreCliente) {
+                mostrarEstado("⚠️ Escribe el nombre del cliente", "error");
+                return;
+            }
+            if (!nombrePrenda) {
+                mostrarEstado("⚠️ Escribe el nombre de la prenda", "error");
+                return;
+            }
+            
+            let clienteLimpio = nombreCliente.replace(/[^a-zA-Z0-9_\-]/g, '_');
+            let prendaLimpia = nombrePrenda.replace(/[^a-zA-Z0-9_\-]/g, '_');
+            let nombreArchivo = `${clienteLimpio}_${prendaLimpia}.txt`;
+            
+            let contenido = generarArchivoTXT();
+            
+            // Descargar el archivo
+            let blob = new Blob([contenido], { type: 'text/plain' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = nombreArchivo;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            
+            // Construir mensaje para WhatsApp
+            let mensajeTexto = `📐 *LA HORMA HUMANA* 📐%0a%0a`;
+            mensajeTexto += `👤 *Cliente:* ${nombreCliente}%0a`;
+            mensajeTexto += `👕 *Prenda:* ${nombrePrenda}%0a`;
+            mensajeTexto += `📅 *Fecha:* ${new Date().toLocaleString('es-ES')}%0a%0a`;
+            mensajeTexto += `📎 *Archivo:* ${nombreArchivo}%0a%0a`;
+            mensajeTexto += `✂️ *Adjunta el archivo desde tu carpeta de descargas*`;
+            
+            // Abrir WhatsApp
+            let urlWA;
+            if (TELEFONO_TALLER && TELEFONO_TALLER !== "584249273264") {
+                urlWA = `https://wa.me/${TELEFONO_TALLER}?text=${mensajeTexto}`;
+            } else {
+                urlWA = `https://wa.me/?text=${mensajeTexto}`;
+            }
+            window.open(urlWA, '_blank');
+            
+            mostrarEstado("✅ Archivo descargado. Se abrió WhatsApp. Adjúntalo manualmente desde Descargas.", "success");
+        }
+        
+        function mostrarEstado(mensaje, tipo) {
+            let statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = mensaje;
+            if (tipo === 'error') {
+                statusDiv.style.background = '#ffebee';
+                statusDiv.style.color = '#c62828';
+            } else {
+                statusDiv.style.background = '#e8f5e9';
+                statusDiv.style.color = '#2e7d32';
+            }
+            setTimeout(() => {
+                statusDiv.style.background = '#e8f5e9';
+                statusDiv.style.color = '#2b5e2b';
+                statusDiv.innerHTML = '✅ Listo | Todos los valores en 0';
+            }, 5000);
+        }
+        
+        function restaurarCero() {
+            document.querySelectorAll('.field-item input').forEach(input => input.value = 0);
+            mostrarEstado("✅ Todos los valores restaurados a 0", "success");
+        }
+        
+        function generarPlaceholder(nombre) {
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='40%25' text-anchor='middle' font-family='Arial' font-size='12' fill='%23999'%3E${encodeURIComponent(nombre)}%3C/text%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' font-family='Arial' font-size='10' fill='%23ccc'%3EImagen no disponible%3C/text%3E%3C/svg%3E`;
+        }
+        
+        function mostrarAyuda(nombre, ayuda) {
+            let panel = document.getElementById('helpPanel');
+            let img = document.getElementById('helpImage');
+            let txt = document.getElementById('helpText');
+            img.src = generarPlaceholder(nombre);
+            txt.innerHTML = `<strong>${nombre}</strong><br>${ayuda}`;
+            panel.classList.add('active');
+        }
+        
+        function cerrarAyuda() {
+            document.getElementById('helpPanel').classList.remove('active');
+        }
+        
+        function configurarAyuda() {
+            document.querySelectorAll('.field-item').forEach(item => {
+                let nombre = item.getAttribute('data-nombre');
+                let ayuda = item.getAttribute('data-ayuda');
+                if (nombre && ayuda) {
+                    let input = item.querySelector('input');
+                    if (input) {
+                        input.addEventListener('focus', () => mostrarAyuda(nombre, ayuda));
+                        input.addEventListener('click', (e) => { e.stopPropagation(); mostrarAyuda(nombre, ayuda); });
+                    }
+                    item.addEventListener('click', (e) => { if (e.target.tagName !== 'INPUT') mostrarAyuda(nombre, ayuda); });
+                }
+            });
+        }
+        
+        function cambiarTipo(tipo) {
+            tipoActual = tipo;
+            if (tipo === "superiores") {
+                document.getElementById('superioresPanel').style.display = 'block';
+                document.getElementById('inferioresPanel').style.display = 'none';
+                document.getElementById('btnSuperiores').classList.add('active');
+                document.getElementById('btnInferiores').classList.remove('active');
+            } else {
+                document.getElementById('superioresPanel').style.display = 'none';
+                document.getElementById('inferioresPanel').style.display = 'block';
+                document.getElementById('btnInferiores').classList.add('active');
+                document.getElementById('btnSuperiores').classList.remove('active');
+            }
+        }
+        
+        document.getElementById('btnSuperiores').onclick = () => cambiarTipo('superiores');
+        document.getElementById('btnInferiores').onclick = () => cambiarTipo('inferiores');
+        document.getElementById('btnRestaurar').onclick = restaurarCero;
+        document.getElementById('btnCerrarAyuda').onclick = cerrarAyuda;
+        document.getElementById('btnEnviarWhatsApp').onclick = enviarPorWhatsApp;
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.field-item') && !e.target.closest('.help-panel')) {
+                cerrarAyuda();
+            }
+        });
+        
+        configurarAyuda();
+        cambiarTipo('superiores');
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registrado:', reg))
+                .catch(err => console.log('Error al registrar Service Worker:', err));
+        }
+    </script>
+</body>
+</html>
